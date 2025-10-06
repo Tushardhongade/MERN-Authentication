@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // FIX: Added /api to baseURL
+  // FIX: Added /api to baseURL and removed from individual routes
   const api = axios.create({
     baseURL: "https://mern-authentication-backend-two.vercel.app/api",
   });
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
   // Add request interceptor for debugging
   api.interceptors.request.use(
     (config) => {
-      console.log(`Making ${config.method} request to: ${config.url}`);
+      console.log(`Making ${config.method} request to: ${config.baseURL}${config.url}`);
       return config;
     },
     (error) => {
@@ -30,7 +30,10 @@ export const AuthProvider = ({ children }) => {
 
   // Add response interceptor to log errors
   api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+      console.log("Response received:", response.status);
+      return response;
+    },
     (error) => {
       console.error("API Error:", error.response?.status, error.response?.data);
       return Promise.reject(error);
@@ -49,8 +52,8 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      console.log("Sending registration request:", userData);
-      // FIX: Now this will call /api/auth/register (correct)
+      console.log("Sending registration request to:", api.defaults.baseURL);
+      // FIX: Removed /api from route since it's in baseURL
       const res = await api.post("/auth/register", userData);
       console.log("Registration response:", res.data);
 
@@ -71,7 +74,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userData) => {
     try {
-      // FIX: Now this will call /api/auth/login (correct)
+      console.log("Sending login request to:", api.defaults.baseURL);
+      // FIX: Removed /api from route since it's in baseURL
       const res = await api.post("/auth/login", userData);
       const { token, user } = res.data;
       setAuthToken(token);
@@ -97,7 +101,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         setAuthToken(token);
         try {
-          // FIX: Now this will call /api/auth/me (correct)
+          // FIX: Removed /api from route since it's in baseURL
           const res = await api.get("/auth/me");
           setUser(res.data);
         } catch (error) {
