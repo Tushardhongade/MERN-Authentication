@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const api = axios.create({
-    baseURL: "https://mern-authentication-backend-two.vercel.app//api",
+    baseURL: "https://mern-authentication-backend-two.vercel.app",
   });
 
   // Add response interceptor to log errors
