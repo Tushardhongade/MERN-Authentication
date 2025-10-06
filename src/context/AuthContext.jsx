@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
 
   // FIX: Added /api to baseURL and removed from individual routes
   const api = axios.create({
-    baseURL: "https://mern-authentication-backend-two.vercel.app/api",
+    baseURL: "https://mern-authentication-backend-two.vercel.app",
   });
 
   // Add request interceptor for debugging
