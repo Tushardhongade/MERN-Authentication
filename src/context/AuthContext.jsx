@@ -11,9 +11,22 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // FIX: Added /api to baseURL
   const api = axios.create({
-    baseURL: "https://mern-authentication-backend-two.vercel.app",
+    baseURL: "https://mern-authentication-backend-two.vercel.app/api",
   });
+
+  // Add request interceptor for debugging
+  api.interceptors.request.use(
+    (config) => {
+      console.log(`Making ${config.method} request to: ${config.url}`);
+      return config;
+    },
+    (error) => {
+      console.error("Request error:", error);
+      return Promise.reject(error);
+    }
+  );
 
   // Add response interceptor to log errors
   api.interceptors.response.use(
@@ -37,6 +50,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       console.log("Sending registration request:", userData);
+      // FIX: Now this will call /api/auth/register (correct)
       const res = await api.post("/auth/register", userData);
       console.log("Registration response:", res.data);
 
@@ -57,12 +71,14 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userData) => {
     try {
+      // FIX: Now this will call /api/auth/login (correct)
       const res = await api.post("/auth/login", userData);
       const { token, user } = res.data;
       setAuthToken(token);
       setUser(user);
       return { success: true };
     } catch (error) {
+      console.error("Login error:", error);
       return {
         success: false,
         message: error.response?.data?.message || "Login failed",
@@ -80,8 +96,14 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("token");
       if (token) {
         setAuthToken(token);
-        // For now, we'll just set a mock user since we're using mock auth
-        setUser({ id: "12345", name: "Test User", email: "test@example.com" });
+        try {
+          // FIX: Now this will call /api/auth/me (correct)
+          const res = await api.get("/auth/me");
+          setUser(res.data);
+        } catch (error) {
+          console.error("Load user error:", error);
+          localStorage.removeItem("token");
+        }
       }
       setLoading(false);
     };
